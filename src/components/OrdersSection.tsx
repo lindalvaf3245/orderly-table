@@ -41,6 +41,7 @@ import {
   Trash2,
   RotateCcw,
 } from 'lucide-react';
+import { Combobox } from '@/components/ui/combobox';
 import { Order } from '@/types/restaurant';
 import { toast } from 'sonner';
 
@@ -249,21 +250,15 @@ export function OrdersSection() {
                     <form onSubmit={handleAddItem} className="space-y-4">
                       <div className="space-y-2">
                         <Label>Produto</Label>
-                        <Select
+                        <Combobox
+                          options={products.map((product) => ({
+                            label: `${product.name} - ${formatCurrency(product.price)}`,
+                            value: product.id,
+                          }))}
                           value={selectedProductId}
-                          onValueChange={setSelectedProductId}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione um produto" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {products.map((product) => (
-                              <SelectItem key={product.id} value={product.id}>
-                                {product.name} - {formatCurrency(product.price)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          onChange={setSelectedProductId}
+                          placeholder="Selecione um produto"
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="quantity">Quantidade</Label>
