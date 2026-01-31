@@ -1,11 +1,47 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { Navigation } from '@/components/Navigation';
+import { OrdersSection } from '@/components/OrdersSection';
+import { ProductsSection } from '@/components/ProductsSection';
+import { HistorySection } from '@/components/HistorySection';
+import { UtensilsCrossed } from 'lucide-react';
+
+type Section = 'orders' | 'products' | 'history';
 
 const Index = () => {
+  const [currentSection, setCurrentSection] = useState<Section>('orders');
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-background pb-20 sm:pb-0">
+      {/* Header */}
+      <header className="sticky top-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border z-40">
+        <div className="container max-w-screen-xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
+              <UtensilsCrossed className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-foreground">Comandas</h1>
+              <p className="text-xs text-muted-foreground">Sistema de Gestão</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Desktop Navigation */}
+      <div className="hidden sm:block sticky top-[73px] z-30 bg-background">
+        <Navigation currentSection={currentSection} onSectionChange={setCurrentSection} />
+      </div>
+
+      {/* Main Content */}
+      <main className="container max-w-screen-xl mx-auto px-4 py-6">
+        {currentSection === 'orders' && <OrdersSection />}
+        {currentSection === 'products' && <ProductsSection />}
+        {currentSection === 'history' && <HistorySection />}
+      </main>
+
+      {/* Mobile Navigation */}
+      <div className="sm:hidden">
+        <Navigation currentSection={currentSection} onSectionChange={setCurrentSection} />
       </div>
     </div>
   );
