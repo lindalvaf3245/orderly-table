@@ -3,7 +3,7 @@ import { Navigation } from '@/components/Navigation';
 import { OrdersSection } from '@/components/OrdersSection';
 import { ProductsSection } from '@/components/ProductsSection';
 import { HistorySection } from '@/components/HistorySection';
-import { UtensilsCrossed } from 'lucide-react';
+import Logo from '@/assets/jailma-logo.png';
 
 type Section = 'orders' | 'products' | 'history';
 
@@ -16,11 +16,9 @@ const Index = () => {
       <header className="sticky top-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border z-40">
         <div className="container max-w-screen-xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
-              <UtensilsCrossed className="h-5 w-5 text-primary-foreground" />
-            </div>
+              <img src={Logo} alt="Logo" className="h-24 " />
             <div>
-              <h1 className="text-lg font-bold text-foreground">Comandas</h1>
+              <h1 className="text-lg font-bold text-foreground">Jailma Mesas e Comandas</h1>
               <p className="text-xs text-muted-foreground">Sistema de Gestão</p>
             </div>
           </div>
