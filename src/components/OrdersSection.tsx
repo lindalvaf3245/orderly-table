@@ -40,6 +40,7 @@ import {
   ShoppingBag,
   Trash2,
   RotateCcw,
+  BookCheck,
 } from 'lucide-react';
 import { Combobox } from '@/components/ui/combobox';
 import { Order } from '@/types/restaurant';
@@ -119,6 +120,11 @@ export function OrdersSection() {
     });
   };
 
+  const handleOpenReceipt = (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.open(`/conferencia/${orderId}`, '_blank');
+  };
+
   // Update selected order when openOrders changes
   const currentSelectedOrder = selectedOrder
     ? openOrders.find((o) => o.id === selectedOrder.id) || null
@@ -195,10 +201,21 @@ export function OrdersSection() {
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-lg">{order.name}</CardTitle>
-                  <Badge variant="outline" className="gap-1">
-                    <Clock className="h-3 w-3" />
-                    {formatTime(order.openedAt)}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8"
+                      onClick={(e) => handleOpenReceipt(order.id, e)}
+                      title="Ver Conferência"
+                    >
+                      <BookCheck className="h-4 w-4" />
+                    </Button>
+                    <Badge variant="outline" className="gap-1">
+                      <Clock className="h-3 w-3" />
+                      {formatTime(order.openedAt)}
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
