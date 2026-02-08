@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useLocalStorage } from './useLocalStorage';
-import { Order, OrderItem, OrderStatus } from '@/types/restaurant';
+import { Order, OrderItem, OrderStatus, PaymentMethod } from '@/types/restaurant';
 
 const OPEN_ORDERS_KEY = 'restaurant_open_orders';
 const ORDER_HISTORY_KEY = 'restaurant_order_history';
@@ -90,7 +90,7 @@ export function useOrders() {
     );
   }, [setOpenOrders]);
 
-  const finalizeOrder = useCallback((orderId: string, status: 'paid' | 'cancelled') => {
+  const finalizeOrder = useCallback((orderId: string, status: 'paid' | 'cancelled', paymentMethod?: PaymentMethod) => {
     const order = openOrders.find((o) => o.id === orderId);
     if (!order) return;
 
@@ -98,6 +98,7 @@ export function useOrders() {
       ...order,
       status,
       closedAt: new Date().toISOString(),
+      paymentMethod,
     };
 
     setOrderHistory((prev) => [finalizedOrder, ...prev]);
@@ -108,8 +109,8 @@ export function useOrders() {
     finalizeOrder(orderId, 'cancelled');
   }, [finalizeOrder]);
 
-  const payOrder = useCallback((orderId: string) => {
-    finalizeOrder(orderId, 'paid');
+  const payOrder = useCallback((orderId: string, paymentMethod: PaymentMethod) => {
+    finalizeOrder(orderId, 'paid', paymentMethod);
   }, [finalizeOrder]);
 
   const getOrder = useCallback((orderId: string) => {

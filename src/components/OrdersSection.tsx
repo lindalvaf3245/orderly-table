@@ -26,13 +26,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Plus,
   X,
   DollarSign,
@@ -41,10 +34,20 @@ import {
   Trash2,
   RotateCcw,
   BookCheck,
+  Banknote,
+  CreditCard,
+  Copy,
 } from 'lucide-react';
+import { PixIcon } from '@/components/icons/PixIcon';
 import { Combobox } from '@/components/ui/combobox';
-import { Order } from '@/types/restaurant';
+import { Order, PaymentMethod } from '@/types/restaurant';
 import { toast } from 'sonner';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function OrdersSection() {
   const { openOrders, createOrder, addItemToOrder, cancelItem, removeItem, cancelOrder, payOrder } = useOrders();
@@ -55,6 +58,7 @@ export function OrdersSection() {
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState('');
   const [itemQuantity, setItemQuantity] = useState('1');
+  const [isPaymentMethodOpen, setIsPaymentMethodOpen] = useState(false);
 
   const handleCreateOrder = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,16 +101,28 @@ export function OrdersSection() {
     toast.info('Item removido');
   };
 
-  const handlePayOrder = (orderId: string) => {
-    payOrder(orderId);
+  const handlePayOrder = (orderId: string, paymentMethod: PaymentMethod) => {
+    payOrder(orderId, paymentMethod);
     setSelectedOrder(null);
-    toast.success('Pagamento registrado!');
+    setIsPaymentMethodOpen(false);
+    const methodLabels: Record<PaymentMethod, string> = {
+      cash: 'Espécie',
+      pix: 'Pix',
+      card: 'Cartão',
+    };
+    toast.success(`Pagamento via ${methodLabels[paymentMethod]} registrado!`);
   };
 
   const handleCancelOrder = (orderId: string) => {
     cancelOrder(orderId);
     setSelectedOrder(null);
     toast.info('Comanda cancelada');
+  };
+
+  const handleRepeatItem = (productId: string, quantity: number) => {
+    setSelectedProductId(productId);
+    setItemQuantity(quantity.toString());
+    setIsAddItemOpen(true);
   };
 
   const formatCurrency = (value: number) => {
@@ -314,63 +330,84 @@ export function OrdersSection() {
                       Nenhum item adicionado
                     </p>
                   ) : (
-                    <div className="space-y-2">
-                      {currentSelectedOrder.items.map((item) => (
-                        <div
-                          key={item.id}
-                          className={`flex items-center justify-between p-3 rounded-lg border ${
-                            item.cancelled
-                              ? 'bg-muted/50 opacity-60'
-                              : 'bg-card'
-                          }`}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p
-                              className={`font-medium ${
-                                item.cancelled ? 'line-through' : ''
-                              }`}
-                            >
-                              {item.quantity}x {item.productName}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {formatCurrency(item.unitPrice)} cada
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`font-semibold ${
-                                item.cancelled ? 'line-through' : ''
-                              }`}
-                            >
-                              {formatCurrency(item.total)}
-                            </span>
-                            {!item.cancelled ? (
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-8 w-8 text-destructive hover:text-destructive"
-                                onClick={() =>
-                                  handleCancelItem(currentSelectedOrder.id, item.id)
-                                }
+                    <TooltipProvider>
+                      <div className="space-y-2">
+                        {currentSelectedOrder.items.map((item) => (
+                          <div
+                            key={item.id}
+                            className={`group flex items-center justify-between p-3 rounded-lg border ${
+                              item.cancelled
+                                ? 'bg-muted/50 opacity-60'
+                                : 'bg-card'
+                            }`}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p
+                                className={`font-medium ${
+                                  item.cancelled ? 'line-through' : ''
+                                }`}
                               >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            ) : (
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-8 w-8"
-                                onClick={() =>
-                                  handleRemoveItem(currentSelectedOrder.id, item.id)
-                                }
+                                {item.quantity}x {item.productName}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {formatCurrency(item.unitPrice)} cada
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`font-semibold ${
+                                  item.cancelled ? 'line-through' : ''
+                                }`}
                               >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
+                                {formatCurrency(item.total)}
+                              </span>
+                              {!item.cancelled && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={() =>
+                                        handleRepeatItem(item.productId, item.quantity)
+                                      }
+                                    >
+                                      <Copy className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Repetir pedido</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                              {!item.cancelled ? (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8 text-destructive hover:text-destructive"
+                                  onClick={() =>
+                                    handleCancelItem(currentSelectedOrder.id, item.id)
+                                  }
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8"
+                                  onClick={() =>
+                                    handleRemoveItem(currentSelectedOrder.id, item.id)
+                                  }
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    </TooltipProvider>
                   )}
                 </div>
 
@@ -417,8 +454,8 @@ export function OrdersSection() {
                     </AlertDialogContent>
                   </AlertDialog>
 
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
+                  <Dialog open={isPaymentMethodOpen} onOpenChange={setIsPaymentMethodOpen}>
+                    <DialogTrigger asChild>
                       <Button
                         size="lg"
                         className="gap-2 bg-success hover:bg-success/90"
@@ -427,26 +464,44 @@ export function OrdersSection() {
                         <DollarSign className="h-5 w-5" />
                         Pagar
                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Confirmar pagamento?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Total: {formatCurrency(currentSelectedOrder.total)}
-                          <br />A comanda será finalizada e movida para o histórico.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Voltar</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handlePayOrder(currentSelectedOrder.id)}
-                          className="bg-success text-success-foreground hover:bg-success/90"
-                        >
-                          Confirmar Pagamento
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Forma de Pagamento</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <p className="text-muted-foreground">
+                          Total: <span className="font-bold text-foreground">{formatCurrency(currentSelectedOrder.total)}</span>
+                        </p>
+                        <div className="grid grid-cols-3 gap-3">
+                          <Button
+                            variant="outline"
+                            className="flex flex-col items-center gap-2 h-24 hover:border-primary hover:bg-primary/5"
+                            onClick={() => handlePayOrder(currentSelectedOrder.id, 'cash')}
+                          >
+                            <Banknote className="h-8 w-8" />
+                            <span>Espécie</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="flex flex-col items-center gap-2 h-24 hover:border-primary hover:bg-primary/5"
+                            onClick={() => handlePayOrder(currentSelectedOrder.id, 'pix')}
+                          >
+                            <PixIcon size={32} />
+                            <span>Pix</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="flex flex-col items-center gap-2 h-24 hover:border-primary hover:bg-primary/5"
+                            onClick={() => handlePayOrder(currentSelectedOrder.id, 'card')}
+                          >
+                            <CreditCard className="h-8 w-8" />
+                            <span>Cartão</span>
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </>

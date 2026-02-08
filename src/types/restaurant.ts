@@ -18,6 +18,7 @@ export interface OrderItem {
 }
 
 export type OrderStatus = 'open' | 'paid' | 'cancelled';
+export type PaymentMethod = 'cash' | 'pix' | 'card';
 
 export interface Order {
   id: string;
@@ -27,6 +28,7 @@ export interface Order {
   items: OrderItem[];
   status: OrderStatus;
   total: number;
+  paymentMethod?: PaymentMethod;
 }
 
 export interface DailySummary {
