@@ -2,8 +2,9 @@ import { useOrders } from '@/hooks/useOrders';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { History, TrendingUp, Calendar, DollarSign } from 'lucide-react';
-import { Order, OrderStatus } from '@/types/restaurant';
+import { History, TrendingUp, Calendar, DollarSign, Banknote, CreditCard } from 'lucide-react';
+import { Order, OrderStatus, PaymentMethod } from '@/types/restaurant';
+import { PixIcon } from '@/components/icons/PixIcon';
 
 export function HistorySection() {
   const { orderHistory, getTodayTotal } = useOrders();
@@ -44,6 +45,32 @@ export function HistorySection() {
             Em Aberto
           </Badge>
         );
+    }
+  };
+
+  const getPaymentMethodIcon = (method?: PaymentMethod) => {
+    switch (method) {
+      case 'cash':
+        return <Banknote className="h-4 w-4" />;
+      case 'pix':
+        return <PixIcon size={16} />;
+      case 'card':
+        return <CreditCard className="h-4 w-4" />;
+      default:
+        return null;
+    }
+  };
+
+  const getPaymentMethodLabel = (method?: PaymentMethod) => {
+    switch (method) {
+      case 'cash':
+        return 'Espécie';
+      case 'pix':
+        return 'Pix';
+      case 'card':
+        return 'Cartão';
+      default:
+        return '';
     }
   };
 
@@ -143,8 +170,14 @@ export function HistorySection() {
                                 <h4 className="font-medium truncate">{order.name}</h4>
                                 {getStatusBadge(order.status)}
                               </div>
-                              <p className="text-sm text-muted-foreground">
-                                {time} • {order.items.filter(i => !i.cancelled).length} item(ns)
+                              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                <span>{time} • {order.items.filter(i => !i.cancelled).length} item(ns)</span>
+                                {order.status === 'paid' && order.paymentMethod && (
+                                  <span className="flex items-center gap-1 text-success">
+                                    {getPaymentMethodIcon(order.paymentMethod)}
+                                    <span className="text-xs">{getPaymentMethodLabel(order.paymentMethod)}</span>
+                                  </span>
+                                )}
                               </p>
                             </div>
                             <div className="text-right">
