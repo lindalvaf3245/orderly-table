@@ -127,6 +127,10 @@ export function useOrders() {
       .reduce((sum, order) => sum + order.total, 0);
   }, [orderHistory]);
 
+  const deleteFromHistory = useCallback((orderId: string) => {
+    setOrderHistory((prev) => prev.filter((o) => o.id !== orderId));
+  }, [setOrderHistory]);
+
   return {
     openOrders,
     orderHistory,
@@ -138,5 +142,6 @@ export function useOrders() {
     payOrder,
     getOrder,
     getTodayTotal,
+    deleteFromHistory,
   };
 }

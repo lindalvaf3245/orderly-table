@@ -1,14 +1,30 @@
+import { useState } from 'react';
 import { useOrders } from '@/hooks/useOrders';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { History, TrendingUp, Calendar, DollarSign, Banknote, CreditCard } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { History, TrendingUp, Calendar, DollarSign, Banknote, CreditCard, Trash2 } from 'lucide-react';
 import { Order, OrderStatus, PaymentMethod } from '@/types/restaurant';
 import { PixIcon } from '@/components/icons/PixIcon';
 
 export function HistorySection() {
-  const { orderHistory, getTodayTotal } = useOrders();
+  const { orderHistory, getTodayTotal, deleteFromHistory } = useOrders();
   const todayTotal = getTodayTotal();
+  
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -72,6 +88,31 @@ export function HistorySection() {
       default:
         return '';
     }
+  };
+
+  const handleDeleteClick = (order: Order, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOrderToDelete(order);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleFirstConfirm = () => {
+    setDeleteDialogOpen(false);
+    setConfirmDeleteDialogOpen(true);
+  };
+
+  const handleFinalConfirm = () => {
+    if (orderToDelete) {
+      deleteFromHistory(orderToDelete.id);
+    }
+    setConfirmDeleteDialogOpen(false);
+    setOrderToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setConfirmDeleteDialogOpen(false);
+    setOrderToDelete(null);
   };
 
   // Group orders by date
@@ -162,7 +203,7 @@ export function HistorySection() {
                   {orders.map((order) => {
                     const { time } = formatDateTime(order.closedAt || order.openedAt);
                     return (
-                      <Card key={order.id} className="hover:shadow-sm transition-shadow">
+                      <Card key={order.id} className="hover:shadow-sm transition-shadow group">
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex-1 min-w-0">
@@ -180,14 +221,24 @@ export function HistorySection() {
                                 )}
                               </p>
                             </div>
-                            <div className="text-right">
-                              <p className={`text-lg font-bold ${
-                                order.status === 'paid' ? 'text-success' : 
-                                order.status === 'cancelled' ? 'text-muted-foreground line-through' : 
-                                'text-foreground'
-                              }`}>
-                                {formatCurrency(order.total)}
-                              </p>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={(e) => handleDeleteClick(order, e)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                              <div className="text-right">
+                                <p className={`text-lg font-bold ${
+                                  order.status === 'paid' ? 'text-success' : 
+                                  order.status === 'cancelled' ? 'text-muted-foreground line-through' : 
+                                  'text-foreground'
+                                }`}>
+                                  {formatCurrency(order.total)}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </CardContent>
@@ -200,6 +251,50 @@ export function HistorySection() {
           })}
         </div>
       )}
+
+      {/* First Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apagar registro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você está prestes a apagar o registro de "{orderToDelete?.name}". 
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelDelete}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleFirstConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Continuar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Second Confirmation Dialog */}
+      <AlertDialog open={confirmDeleteDialogOpen} onOpenChange={setConfirmDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">Tem certeza absoluta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta é a última confirmação. O registro de "{orderToDelete?.name}" no valor de{' '}
+              {orderToDelete && formatCurrency(orderToDelete.total)} será permanentemente apagado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelDelete}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleFinalConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Apagar definitivamente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
