@@ -170,6 +170,14 @@ export function OrdersSection() {
     setPartialAmount('');
     setPartialPaymentMethod(null);
     setIsPartialPaymentOpen(false);
+
+    // Auto-close order when remaining balance reaches zero
+    const newRemaining = remaining - amount;
+    if (newRemaining <= 0.001) {
+      payOrder(currentSelectedOrder.id, partialPaymentMethod);
+      setSelectedOrder(null);
+      toast.success('Comanda fechada! Pagamento completo.');
+    }
   };
 
   const formatCurrency = (value: number) => {
