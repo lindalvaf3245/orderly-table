@@ -211,15 +211,40 @@ export function HistorySection() {
                                 <h4 className="font-medium truncate">{order.name}</h4>
                                 {getStatusBadge(order.status)}
                               </div>
-                              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
                                 <span>{time} • {order.items.filter(i => !i.cancelled).length} item(ns)</span>
-                                {order.status === 'paid' && order.paymentMethod && (
+                                {order.status === 'paid' && order.paymentMethod && !order.partialPayments?.length && (
                                   <span className="flex items-center gap-1 text-success">
                                     {getPaymentMethodIcon(order.paymentMethod)}
                                     <span className="text-xs">{getPaymentMethodLabel(order.paymentMethod)}</span>
                                   </span>
                                 )}
                               </p>
+                              {order.status === 'paid' && order.partialPayments && order.partialPayments.length > 0 && (
+                                <div className="mt-2 space-y-1 border-t border-border/50 pt-2">
+                                  <p className="text-xs font-medium text-muted-foreground">Pagamentos:</p>
+                                  {order.partialPayments.map((p) => (
+                                    <div key={p.id} className="flex items-center justify-between text-xs text-muted-foreground">
+                                      <span className="flex items-center gap-1.5">
+                                        {getPaymentMethodIcon(p.method)}
+                                        <span>{getPaymentMethodLabel(p.method)}</span>
+                                      </span>
+                                      <span className="font-medium text-foreground">{formatCurrency(p.amount)}</span>
+                                    </div>
+                                  ))}
+                                  {order.paymentMethod && (
+                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                      <span className="flex items-center gap-1.5">
+                                        {getPaymentMethodIcon(order.paymentMethod)}
+                                        <span>{getPaymentMethodLabel(order.paymentMethod)} (final)</span>
+                                      </span>
+                                      <span className="font-medium text-foreground">
+                                        {formatCurrency(order.total - order.partialPayments.reduce((s, p) => s + p.amount, 0))}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                             <div className="flex items-center gap-2">
                               <Button
