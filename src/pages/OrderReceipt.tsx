@@ -42,7 +42,18 @@ export default function OrderReceipt() {
     );
   }
 
+  // Stack active items by product for display
   const activeItems = order.items.filter((item) => !item.cancelled);
+  const stackedItems = activeItems.reduce<{ productName: string; quantity: number; unitPrice: number; total: number }[]>((acc, item) => {
+    const existing = acc.find((a) => a.productName === item.productName && a.unitPrice === item.unitPrice);
+    if (existing) {
+      existing.quantity += item.quantity;
+      existing.total += item.total;
+    } else {
+      acc.push({ productName: item.productName, quantity: item.quantity, unitPrice: item.unitPrice, total: item.total });
+    }
+    return acc;
+  }, []);
 
   return (
     <div className="min-h-screen bg-white text-black p-6 font-mono text-sm">
@@ -82,15 +93,15 @@ export default function OrderReceipt() {
             </tr>
           </thead>
           <tbody>
-            {activeItems.length === 0 ? (
+            {stackedItems.length === 0 ? (
               <tr>
                 <td colSpan={3} className="py-4 text-center text-gray-500">
                   Nenhum item
                 </td>
               </tr>
             ) : (
-              activeItems.map((item) => (
-                <tr key={item.id} className="border-b border-gray-200">
+              stackedItems.map((item, idx) => (
+                <tr key={idx} className="border-b border-gray-200">
                   <td className="py-2">{item.quantity}</td>
                   <td className="py-2">{item.productName}</td>
                   <td className="py-2 text-right">{formatCurrency(item.total)}</td>

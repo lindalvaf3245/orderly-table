@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useLocalStorage } from './useLocalStorage';
-import { Order, OrderItem, OrderStatus, PaymentMethod } from '@/types/restaurant';
+import { Order, OrderItem, OrderStatus, PaymentMethod, PartialPayment } from '@/types/restaurant';
 
 const OPEN_ORDERS_KEY = 'restaurant_open_orders';
 const ORDER_HISTORY_KEY = 'restaurant_order_history';
@@ -34,17 +34,31 @@ export function useOrders() {
         prev.map((order) => {
           if (order.id !== orderId) return order;
 
-          const newItem: OrderItem = {
-            id: crypto.randomUUID(),
-            productId,
-            productName,
-            quantity,
-            unitPrice,
-            total: quantity * unitPrice,
-            cancelled: false,
-          };
+          // Stack: find existing non-cancelled item with same product
+          const existingIndex = order.items.findIndex(
+            (item) => item.productId === productId && !item.cancelled
+          );
 
-          const updatedItems = [...order.items, newItem];
+          let updatedItems: OrderItem[];
+          if (existingIndex >= 0) {
+            updatedItems = order.items.map((item, idx) => {
+              if (idx !== existingIndex) return item;
+              const newQty = item.quantity + quantity;
+              return { ...item, quantity: newQty, total: newQty * item.unitPrice };
+            });
+          } else {
+            const newItem: OrderItem = {
+              id: crypto.randomUUID(),
+              productId,
+              productName,
+              quantity,
+              unitPrice,
+              total: quantity * unitPrice,
+              cancelled: false,
+            };
+            updatedItems = [...order.items, newItem];
+          }
+
           return {
             ...order,
             items: updatedItems,
@@ -56,14 +70,36 @@ export function useOrders() {
     [setOpenOrders]
   );
 
-  const cancelItem = useCallback((orderId: string, itemId: string) => {
+  const cancelItem = useCallback((orderId: string, itemId: string, cancelQuantity?: number) => {
     setOpenOrders((prev) =>
       prev.map((order) => {
         if (order.id !== orderId) return order;
 
-        const updatedItems = order.items.map((item) =>
-          item.id === itemId ? { ...item, cancelled: true } : item
-        );
+        let updatedItems: OrderItem[];
+        const item = order.items.find((i) => i.id === itemId);
+        if (!item) return order;
+
+        if (cancelQuantity && cancelQuantity < item.quantity) {
+          // Split: reduce original, create cancelled portion
+          updatedItems = order.items.flatMap((i) => {
+            if (i.id !== itemId) return [i];
+            const remaining = i.quantity - cancelQuantity;
+            return [
+              { ...i, quantity: remaining, total: remaining * i.unitPrice },
+              {
+                ...i,
+                id: crypto.randomUUID(),
+                quantity: cancelQuantity,
+                total: cancelQuantity * i.unitPrice,
+                cancelled: true,
+              },
+            ];
+          });
+        } else {
+          updatedItems = order.items.map((i) =>
+            i.id === itemId ? { ...i, cancelled: true } : i
+          );
+        }
 
         return {
           ...order,
@@ -131,6 +167,39 @@ export function useOrders() {
     setOrderHistory((prev) => prev.filter((o) => o.id !== orderId));
   }, [setOrderHistory]);
 
+  const addPartialPayment = useCallback((orderId: string, amount: number, method: PaymentMethod) => {
+    setOpenOrders((prev) =>
+      prev.map((order) => {
+        if (order.id !== orderId) return order;
+        const payment: PartialPayment = {
+          id: crypto.randomUUID(),
+          amount,
+          method,
+          paidAt: new Date().toISOString(),
+        };
+        const partialPayments = [...(order.partialPayments || []), payment];
+        return { ...order, partialPayments };
+      })
+    );
+  }, [setOpenOrders]);
+
+  const removePartialPayment = useCallback((orderId: string, paymentId: string) => {
+    setOpenOrders((prev) =>
+      prev.map((order) => {
+        if (order.id !== orderId) return order;
+        return {
+          ...order,
+          partialPayments: (order.partialPayments || []).filter((p) => p.id !== paymentId),
+        };
+      })
+    );
+  }, [setOpenOrders]);
+
+  const getOrderRemainingBalance = useCallback((order: Order): number => {
+    const paid = (order.partialPayments || []).reduce((s, p) => s + p.amount, 0);
+    return Math.max(0, order.total - paid);
+  }, []);
+
   return {
     openOrders,
     orderHistory,
@@ -143,5 +212,8 @@ export function useOrders() {
     getOrder,
     getTodayTotal,
     deleteFromHistory,
+    addPartialPayment,
+    removePartialPayment,
+    getOrderRemainingBalance,
   };
 }
