@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Order } from '@/types/restaurant';
+import Logo from '@/assets/jailma-logo.png';
 
 const OPEN_ORDERS_KEY = 'restaurant_open_orders';
 const ORDER_HISTORY_KEY = 'restaurant_order_history';
 
-const SEPARATOR = '--------------------------------';
+const SEPARATOR = '------------------------------';
 const SEPARATOR_DOUBLE = '================================';
 
 const getPaymentMethodLabel = (method: string) => {
@@ -71,12 +72,16 @@ export default function OrderReceipt() {
     <div className="min-h-screen bg-white text-black p-2 font-mono text-xs" style={{ maxWidth: '58mm', margin: '0 auto' }}>
       {/* Header */}
       <div className="text-center">
-        <p className="font-bold text-sm">Jailma Restaurante</p>
+        <p className="font-bold text-sm">Jailma Lanches e Petiscos</p>
+        <div className='flex justify-center items-center'>
+        <img src={Logo} alt="Logo" className='grayscale h-24' />
+
+        </div>
         <p className="text-[10px]">
-          Rua Exemplo, 123 - Centro
+          Rua Sertãozinho, 105 - Diogo Lopes
         </p>
         <p className="text-[10px]">
-          Tel: (00) 0000-0000
+          Tel: (84) 98604-0039
         </p>
       </div>
       <p className="text-center">{SEPARATOR}</p>
@@ -153,6 +158,7 @@ export default function OrderReceipt() {
       <div className="text-center pt-1">
         <p>Obrigado pela preferência!</p>
         <p>Volte sempre!</p>
+        <p><strong>Deus</strong> seja louvado.</p>
       </div>
     </div>
   );
