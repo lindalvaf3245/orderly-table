@@ -130,8 +130,8 @@ export default function OrderReceipt() {
           )}
           <p>{SEPARATOR}</p>
           <div className="flex justify-between font-bold">
-            <span>TOTAL PAGO</span>
-            <span>{formatCurrency(order.total)}</span>
+            <span>TOTAL A PAGAR</span>
+            <span>{formatCurrency(remaining)}</span>
           </div>
         </>
       )}
