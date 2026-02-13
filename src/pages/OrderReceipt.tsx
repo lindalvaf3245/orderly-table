@@ -67,11 +67,16 @@ export default function OrderReceipt() {
     return acc;
 
 
+
   }, []);
 
   const partialPayments = order.partialPayments || [];
   const totalPaid = partialPayments.reduce((s, p) => s + p.amount, 0);
   const remaining = Math.max(0, order.total - totalPaid);
+
+  setTimeout(() => {
+    window.print();
+  }, 500);
 
   return (
     <div className="min-h-screen bg-white text-black p-2 font-mono text-sm" style={{ maxWidth: '58mm', margin: '0 auto' }}>
