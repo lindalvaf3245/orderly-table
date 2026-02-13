@@ -15,12 +15,13 @@ const navItems = [
   { id: 'history' as Section, label: 'Histórico', icon: History },
 ];
 
-useEffect(() => {
+
+
+export function Navigation({ currentSection, onSectionChange }: NavigationProps) {
+  useEffect(() => {
   const aside = document.getElementsByTagName('aside')[0];
   aside?.remove();
 }, []);
-
-export function Navigation({ currentSection, onSectionChange }: NavigationProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 sm:relative sm:border-t-0 sm:border-b">
       <div className="container max-w-screen-xl mx-auto">
