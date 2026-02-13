@@ -3,9 +3,10 @@ import { Navigation } from '@/components/Navigation';
 import { OrdersSection } from '@/components/OrdersSection';
 import { ProductsSection } from '@/components/ProductsSection';
 import { HistorySection } from '@/components/HistorySection';
+import { AnalyticsSection } from '@/components/AnalyticsSection';
 import Logo from '@/assets/jailma-logo.png';
 
-type Section = 'orders' | 'products' | 'history';
+type Section = 'orders' | 'products' | 'history' | 'analytics';
 
 const Index = () => {
   const [currentSection, setCurrentSection] = useState<Section>('orders');
@@ -35,6 +36,7 @@ const Index = () => {
         {currentSection === 'orders' && <OrdersSection />}
         {currentSection === 'products' && <ProductsSection />}
         {currentSection === 'history' && <HistorySection />}
+        {currentSection === 'analytics' && <AnalyticsSection />}
       </main>
 
       {/* Mobile Navigation */}
