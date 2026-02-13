@@ -15,8 +15,6 @@ const navItems = [
   { id: 'history' as Section, label: 'Histórico', icon: History },
 ];
 
-
-
 export function Navigation({ currentSection, onSectionChange }: NavigationProps) {
 
   return (

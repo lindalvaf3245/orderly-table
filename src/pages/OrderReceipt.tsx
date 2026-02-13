@@ -6,8 +6,8 @@ import Logo from '@/assets/jailma-logo.png';
 const OPEN_ORDERS_KEY = 'restaurant_open_orders';
 const ORDER_HISTORY_KEY = 'restaurant_order_history';
 
-const SEPARATOR = '------------------------------';
-const SEPARATOR_DOUBLE = '================================';
+const SEPARATOR = '--------------------------';
+const SEPARATOR_DOUBLE = '============================';
 
 const getPaymentMethodLabel = (method: string) => {
   switch (method) {
@@ -74,7 +74,7 @@ export default function OrderReceipt() {
   const remaining = Math.max(0, order.total - totalPaid);
 
   return (
-    <div className="min-h-screen bg-white text-black p-2 font-mono text-xs" style={{ maxWidth: '58mm', margin: '0 auto' }}>
+    <div className="min-h-screen bg-white text-black p-2 font-mono text-sm" style={{ maxWidth: '58mm', margin: '0 auto' }}>
       {/* Header */}
       <div className="text-center">
         <p className="font-bold text-sm">Jailma Lanches e Petiscos</p>
@@ -139,9 +139,9 @@ export default function OrderReceipt() {
             </div>
           )}
           <p>{SEPARATOR}</p>
-          <div className="flex justify-between font-bold">
+          <div className="flex justify-between items-center font-bold">
             <span>TOTAL A PAGAR</span>
-            <span>{formatCurrency(remaining)}</span>
+            <span className='text-lg'>{formatCurrency(remaining)}</span>
           </div>
         </>
       )}
