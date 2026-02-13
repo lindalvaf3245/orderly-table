@@ -1,5 +1,6 @@
 import { ShoppingBag, Package, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
 
 type Section = 'orders' | 'products' | 'history';
 
@@ -13,6 +14,11 @@ const navItems = [
   { id: 'products' as Section, label: 'Produtos', icon: Package },
   { id: 'history' as Section, label: 'Histórico', icon: History },
 ];
+
+useEffect(() => {
+  const aside = document.getElementsByTagName('aside')[0];
+  aside?.remove();
+}, []);
 
 export function Navigation({ currentSection, onSectionChange }: NavigationProps) {
   return (

@@ -52,6 +52,9 @@ export default function OrderReceipt() {
     );
   }
 
+  document.title = `Comanda ${order.name} - ${formatCurrency(order.total)}`;
+  document.getElementsByTagName('aside')[0]?.remove();
+
   const activeItems = order.items.filter((item) => !item.cancelled);
   const stackedItems = activeItems.reduce<{ productName: string; quantity: number; unitPrice: number; total: number }[]>((acc, item) => {
     const existing = acc.find((a) => a.productName === item.productName && a.unitPrice === item.unitPrice);
@@ -62,6 +65,8 @@ export default function OrderReceipt() {
       acc.push({ productName: item.productName, quantity: item.quantity, unitPrice: item.unitPrice, total: item.total });
     }
     return acc;
+
+
   }, []);
 
   const partialPayments = order.partialPayments || [];
