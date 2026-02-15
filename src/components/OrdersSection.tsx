@@ -97,6 +97,19 @@ export function OrdersSection() {
     const qty = parseInt(itemQuantity) || 1;
     addItemToOrder(selectedOrder.id, product.id, product.name, qty, product.price);
     toast.success(`${qty}x ${product.name} adicionado!`);
+
+    // Auto-open kitchen ticket for kitchen products
+    if (product.forKitchen) {
+      const currentOrder = openOrders.find((o) => o.id === selectedOrder.id);
+      const ticketData = {
+        orderName: currentOrder?.name || selectedOrder.name,
+        items: [{ name: product.name, quantity: qty }],
+        timestamp: new Date().toISOString(),
+      };
+      const encoded = encodeURIComponent(JSON.stringify(ticketData));
+      window.open(`/pedido-cozinha?data=${encoded}`, '_blank');
+    }
+
     setSelectedProductId('');
     setItemQuantity('1');
     setIsAddItemOpen(false);
