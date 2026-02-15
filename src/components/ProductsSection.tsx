@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Plus, Pencil, Trash2, Package } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, ChefHat } from 'lucide-react';
 import { Product } from '@/types/restaurant';
 import { toast } from 'sonner';
 
@@ -32,10 +33,12 @@ export function ProductsSection() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formName, setFormName] = useState('');
   const [formPrice, setFormPrice] = useState('');
+  const [formForKitchen, setFormForKitchen] = useState(false);
 
   const resetForm = () => {
     setFormName('');
     setFormPrice('');
+    setFormForKitchen(false);
     setEditingProduct(null);
   };
 
@@ -54,10 +57,10 @@ export function ProductsSection() {
     }
 
     if (editingProduct) {
-      updateProduct(editingProduct.id, formName, price);
+      updateProduct(editingProduct.id, formName, price, formForKitchen);
       toast.success('Produto atualizado!');
     } else {
-      addProduct(formName, price);
+      addProduct(formName, price, formForKitchen);
       toast.success('Produto adicionado!');
     }
 
@@ -69,6 +72,7 @@ export function ProductsSection() {
     setEditingProduct(product);
     setFormName(product.name);
     setFormPrice(product.price.toFixed(2).replace('.', ','));
+    setFormForKitchen(product.forKitchen);
     setIsAddOpen(true);
   };
 
@@ -126,6 +130,17 @@ export function ProductsSection() {
                   inputMode="decimal"
                 />
               </div>
+              <div className="flex items-center justify-between space-x-2">
+                <Label htmlFor="forKitchen" className="flex items-center gap-2">
+                  <ChefHat className="h-4 w-4" />
+                  Para a cozinha
+                </Label>
+                <Switch
+                  id="forKitchen"
+                  checked={formForKitchen}
+                  onCheckedChange={setFormForKitchen}
+                />
+              </div>
               <div className="flex gap-3 pt-2">
                 <Button
                   type="button"
@@ -170,6 +185,12 @@ export function ProductsSection() {
                     <p className="text-xl font-bold text-primary mt-1">
                       {formatCurrency(product.price)}
                     </p>
+                    {product.forKitchen && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                        <ChefHat className="h-3 w-3" />
+                        <span>Cozinha</span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button

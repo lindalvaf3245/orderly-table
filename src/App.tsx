@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import OrderReceipt from "./pages/OrderReceipt";
 import DailyConference from "./pages/DailyConference";
+import KitchenTicket from "./pages/KitchenTicket";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/conferencia/:orderId" element={<OrderReceipt />} />
+          <Route path="/pedido-cozinha" element={<KitchenTicket />} />
           <Route path="/conferencia-dia" element={<DailyConference />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
