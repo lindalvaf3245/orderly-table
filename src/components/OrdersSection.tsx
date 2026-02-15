@@ -62,6 +62,7 @@ export function OrdersSection() {
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState('');
   const [itemQuantity, setItemQuantity] = useState('1');
+  const [kitchenNotes, setKitchenNotes] = useState('');
   const [isPaymentMethodOpen, setIsPaymentMethodOpen] = useState(false);
 
   // Cancel quantity dialog state
@@ -105,6 +106,7 @@ export function OrdersSection() {
         orderName: currentOrder?.name || selectedOrder.name,
         items: [{ name: product.name, quantity: qty }],
         timestamp: new Date().toISOString(),
+        notes: kitchenNotes.trim() || undefined,
       };
       const encoded = encodeURIComponent(JSON.stringify(ticketData));
       window.open(`/pedido-cozinha?data=${encoded}`, '_blank');
@@ -112,6 +114,7 @@ export function OrdersSection() {
 
     setSelectedProductId('');
     setItemQuantity('1');
+    setKitchenNotes('');
     setIsAddItemOpen(false);
   };
 
@@ -354,6 +357,20 @@ export function OrdersSection() {
                         <Label htmlFor="quantity">Quantidade</Label>
                         <Input id="quantity" type="number" min="1" value={itemQuantity} onChange={(e) => setItemQuantity(e.target.value)} />
                       </div>
+                      {(() => {
+                        const selectedProduct = products.find(p => p.id === selectedProductId);
+                        return selectedProduct?.forKitchen ? (
+                          <div className="space-y-2">
+                            <Label htmlFor="kitchenNotes">Observações</Label>
+                            <Input
+                              id="kitchenNotes"
+                              value={kitchenNotes}
+                              onChange={(e) => setKitchenNotes(e.target.value)}
+                              placeholder="Ex: sem cebola, bem passado..."
+                            />
+                          </div>
+                        ) : null;
+                      })()}
                       <div className="flex gap-3 pt-2">
                         <Button type="button" variant="outline" className="flex-1" onClick={() => setIsAddItemOpen(false)}>Cancelar</Button>
                         <Button type="submit" className="flex-1">Adicionar</Button>
