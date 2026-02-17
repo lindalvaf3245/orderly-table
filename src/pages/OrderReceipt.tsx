@@ -91,7 +91,7 @@ export default function OrderReceipt() {
           Rua Sertãozinho, 105 - Diogo Lopes
         </p>
         <p className="text-[10px]">
-          Tel: (84) 98604-0039
+          Tel: (84) 9 8604-0039
         </p>
       </div>
       <p className="text-center">{SEPARATOR}</p>
