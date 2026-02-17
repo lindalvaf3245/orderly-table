@@ -36,6 +36,7 @@ export interface Order {
   items: OrderItem[];
   status: OrderStatus;
   total: number;
+  discount?: number;
   paymentMethod?: PaymentMethod;
   partialPayments?: PartialPayment[];
 }
