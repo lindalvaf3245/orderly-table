@@ -12,29 +12,45 @@ type Section = 'orders' | 'products' | 'history' | 'analytics';
 const Index = () => {
   const [currentSection, setCurrentSection] = useState<Section>('orders');
 
-  function onExportClick() {
-    const openOrders = localStorage.getItem('restaurant_open_orders');
-    const orderHistory = localStorage.getItem('restaurant_order_history');
-    const products = localStorage.getItem('restaurant_products');
+  async function onExportClick() {
+  const openOrders = JSON.parse(
+    localStorage.getItem('restaurant_open_orders') || '[]'
+  );
+  const orderHistory = JSON.parse(
+    localStorage.getItem('restaurant_order_history') || '[]'
+  );
+  const products = JSON.parse(
+    localStorage.getItem('restaurant_products') || '[]'
+  );
 
-    const data = {
-      openOrders: openOrders ? JSON.parse(openOrders) : [],
-      orderHistory: orderHistory ? JSON.parse(orderHistory) : [],
-      products: products ? JSON.parse(products) : [],
-    };
+  const data = {
+    openOrders,
+    orderHistory,
+    products,
+  };
 
-    const dataString = JSON.stringify(data, null, 2);
-    const blob = new Blob([dataString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+  const jsonString = JSON.stringify(data, null, 2);
 
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `jailma_data_${new Date().toISOString()}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  try {
+    const handle = await (window as any).showSaveFilePicker({
+      suggestedName: `jailma_data_${new Date().toISOString()}.json`,
+      types: [
+        {
+          description: 'JSON file',
+          accept: { 'application/json': ['.json'] },
+        },
+      ],
+    });
+
+    const writable = await handle.createWritable();
+    await writable.write(jsonString);
+    await writable.close();
+
+    alert('Arquivo salvo com sucesso! ✅');
+  } catch (err) {
+    console.log('Usuário cancelou o salvamento');
   }
+}
 
   function onImportClick() {
     document.getElementById('import-json')?.click();
