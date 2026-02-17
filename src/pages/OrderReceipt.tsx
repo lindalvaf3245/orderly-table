@@ -120,6 +120,21 @@ export default function OrderReceipt() {
       )}
       <p>{SEPARATOR_DOUBLE}</p>
 
+      {/* Discount */}
+      {(order.discount ?? 0) > 0 && (
+        <>
+          <div className="flex justify-between">
+            <span>Subtotal</span>
+            <span>{formatCurrency(order.items.filter(i => !i.cancelled).reduce((s, i) => s + i.total, 0))}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Desconto</span>
+            <span>-{formatCurrency(order.discount!)}</span>
+          </div>
+          <p>{SEPARATOR}</p>
+        </>
+      )}
+
       {/* Total */}
       <div className="flex justify-between font-bold text-sm">
         <span>TOTAL</span>

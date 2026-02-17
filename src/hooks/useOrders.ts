@@ -22,10 +22,11 @@ export function useOrders() {
     return newOrder;
   }, [setOpenOrders]);
 
-  const calculateOrderTotal = (items: OrderItem[]): number => {
-    return items
+  const calculateOrderTotal = (items: OrderItem[], discount: number = 0): number => {
+    const subtotal = items
       .filter((item) => !item.cancelled)
       .reduce((sum, item) => sum + item.total, 0);
+    return Math.max(0, subtotal - discount);
   };
 
   const addItemToOrder = useCallback(
@@ -62,7 +63,7 @@ export function useOrders() {
           return {
             ...order,
             items: updatedItems,
-            total: calculateOrderTotal(updatedItems),
+            total: calculateOrderTotal(updatedItems, order.discount),
           };
         })
       );
@@ -104,7 +105,7 @@ export function useOrders() {
         return {
           ...order,
           items: updatedItems,
-          total: calculateOrderTotal(updatedItems),
+          total: calculateOrderTotal(updatedItems, order.discount),
         };
       })
     );
@@ -120,7 +121,7 @@ export function useOrders() {
         return {
           ...order,
           items: updatedItems,
-          total: calculateOrderTotal(updatedItems),
+          total: calculateOrderTotal(updatedItems, order.discount),
         };
       })
     );
@@ -200,6 +201,20 @@ export function useOrders() {
     return Math.max(0, order.total - paid);
   }, []);
 
+  const setOrderDiscount = useCallback((orderId: string, discount: number) => {
+    setOpenOrders((prev) =>
+      prev.map((order) => {
+        if (order.id !== orderId) return order;
+        const newDiscount = Math.max(0, discount);
+        return {
+          ...order,
+          discount: newDiscount,
+          total: calculateOrderTotal(order.items, newDiscount),
+        };
+      })
+    );
+  }, [setOpenOrders]);
+
   return {
     openOrders,
     orderHistory,
@@ -215,5 +230,6 @@ export function useOrders() {
     addPartialPayment,
     removePartialPayment,
     getOrderRemainingBalance,
+    setOrderDiscount,
   };
 }
