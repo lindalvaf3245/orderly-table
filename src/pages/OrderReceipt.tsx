@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Order } from '@/types/restaurant';
-import Logo from '@/assets/jailma-logo.png';
+import Logo from '@/assets/jailma-logo-bw.png';
 
 const OPEN_ORDERS_KEY = 'restaurant_open_orders';
 const ORDER_HISTORY_KEY = 'restaurant_order_history';
