@@ -84,7 +84,7 @@ export default function OrderReceipt() {
       <div className="text-center">
         <p className="font-bold text-sm">Jailma Lanches e Petiscos</p>
         <div className='flex justify-center items-center'>
-        <img src={Logo} alt="Logo" className='grayscale h-24' />
+        <img src={Logo} alt="Logo" className='grayscale h-40' />
 
         </div>
         <p className="text-[10px]">
