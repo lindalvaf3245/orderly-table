@@ -38,6 +38,7 @@ import {
   CreditCard,
   Copy,
   SplitSquareHorizontal,
+  Percent,
 } from 'lucide-react';
 import { PixIcon } from '@/components/icons/PixIcon';
 import { Combobox } from '@/components/ui/combobox';
@@ -54,6 +55,7 @@ export function OrdersSection() {
   const {
     openOrders, createOrder, addItemToOrder, cancelItem, removeItem,
     cancelOrder, payOrder, addPartialPayment, removePartialPayment, getOrderRemainingBalance,
+    setOrderDiscount,
   } = useOrders();
   const { products } = useProducts();
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
@@ -74,6 +76,10 @@ export function OrdersSection() {
   const [isPartialPaymentOpen, setIsPartialPaymentOpen] = useState(false);
   const [partialAmount, setPartialAmount] = useState('');
   const [partialPaymentMethod, setPartialPaymentMethod] = useState<PaymentMethod | null>(null);
+
+  // Discount dialog state
+  const [isDiscountOpen, setIsDiscountOpen] = useState(false);
+  const [discountValue, setDiscountValue] = useState('');
 
   const handleCreateOrder = (e: React.FormEvent) => {
     e.preventDefault();
@@ -194,6 +200,19 @@ export function OrdersSection() {
       setSelectedOrder(null);
       toast.success('Comanda fechada! Pagamento completo.');
     }
+  };
+
+  const handleSetDiscount = () => {
+    if (!currentSelectedOrder) return;
+    const amount = parseFloat(discountValue.replace(',', '.'));
+    if (isNaN(amount) || amount < 0) {
+      toast.error('Digite um valor válido');
+      return;
+    }
+    setOrderDiscount(currentSelectedOrder.id, amount);
+    toast.success(amount > 0 ? `Desconto de ${formatCurrency(amount)} aplicado!` : 'Desconto removido');
+    setDiscountValue('');
+    setIsDiscountOpen(false);
   };
 
   const formatCurrency = (value: number) => {
@@ -475,6 +494,23 @@ export function OrdersSection() {
 
                 {/* Total */}
                 <div className="space-y-1 py-2">
+                  {(currentSelectedOrder.discount ?? 0) > 0 && (
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>Subtotal</span>
+                      <span>{formatCurrency(currentSelectedOrder.items.filter(i => !i.cancelled).reduce((s, i) => s + i.total, 0))}</span>
+                    </div>
+                  )}
+                  {(currentSelectedOrder.discount ?? 0) > 0 && (
+                    <div className="flex items-center justify-between text-sm text-green-600">
+                      <span className="flex items-center gap-1">
+                        Desconto
+                        <Button size="icon" variant="ghost" className="h-5 w-5" onClick={() => { setOrderDiscount(currentSelectedOrder.id, 0); toast.info('Desconto removido'); }}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </span>
+                      <span>-{formatCurrency(currentSelectedOrder.discount!)}</span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-medium">Total</span>
                     <span className="text-2xl font-bold text-primary">{formatCurrency(currentSelectedOrder.total)}</span>
@@ -492,6 +528,51 @@ export function OrdersSection() {
                     </>
                   )}
                 </div>
+
+                {/* Discount Button */}
+                <Dialog open={isDiscountOpen} onOpenChange={(open) => {
+                  setIsDiscountOpen(open);
+                  if (open) setDiscountValue((currentSelectedOrder.discount ?? 0) > 0 ? (currentSelectedOrder.discount!).toString() : '');
+                }}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2 w-full">
+                      <Percent className="h-4 w-4" />
+                      {(currentSelectedOrder.discount ?? 0) > 0 ? `Desconto: ${formatCurrency(currentSelectedOrder.discount!)}` : 'Desconto'}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Aplicar Desconto</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <p className="text-muted-foreground">
+                        Subtotal: <span className="font-bold text-foreground">{formatCurrency(currentSelectedOrder.items.filter(i => !i.cancelled).reduce((s, i) => s + i.total, 0))}</span>
+                      </p>
+                      <div className="space-y-2">
+                        <Label htmlFor="discountValue">Valor do desconto (R$)</Label>
+                        <Input
+                          id="discountValue"
+                          type="text"
+                          inputMode="decimal"
+                          value={discountValue}
+                          onChange={(e) => setDiscountValue(e.target.value)}
+                          placeholder="Ex: 10,00"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="flex gap-3">
+                        {(currentSelectedOrder.discount ?? 0) > 0 && (
+                          <Button variant="outline" className="flex-1" onClick={() => { setOrderDiscount(currentSelectedOrder.id, 0); toast.info('Desconto removido'); setIsDiscountOpen(false); }}>
+                            Remover
+                          </Button>
+                        )}
+                        <Button className="flex-1" onClick={handleSetDiscount}>
+                          Aplicar
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
 
                 {/* Actions */}
                 <div className="grid grid-cols-3 gap-3 pt-2">
