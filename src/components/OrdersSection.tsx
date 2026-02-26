@@ -65,6 +65,8 @@ export function OrdersSection() {
   const [selectedProductId, setSelectedProductId] = useState('');
   const [itemQuantity, setItemQuantity] = useState('1');
   const [kitchenNotes, setKitchenNotes] = useState('');
+  const [pendingKitchenItems, setPendingKitchenItems] = useState<{ name: string; quantity: number }[]>([]);
+  const [pendingKitchenNotes, setPendingKitchenNotes] = useState('');
   const [isPaymentMethodOpen, setIsPaymentMethodOpen] = useState(false);
 
   // Cancel quantity dialog state
@@ -105,23 +107,50 @@ export function OrdersSection() {
     addItemToOrder(selectedOrder.id, product.id, product.name, qty, product.price);
     toast.success(`${qty}x ${product.name} adicionado!`);
 
-    // Auto-open kitchen ticket for kitchen products
+    // Accumulate kitchen items
     if (product.forKitchen) {
-      const currentOrder = openOrders.find((o) => o.id === selectedOrder.id);
-      const ticketData = {
-        orderName: currentOrder?.name || selectedOrder.name,
-        items: [{ name: product.name, quantity: qty }],
-        timestamp: new Date().toISOString(),
-        notes: kitchenNotes.trim() || undefined,
-      };
-      const encoded = encodeURIComponent(JSON.stringify(ticketData));
-      window.open(`/pedido-cozinha?data=${encoded}`, '_blank');
+      setPendingKitchenItems((prev) => {
+        const existing = prev.find((i) => i.name === product.name);
+        if (existing) {
+          return prev.map((i) => i.name === product.name ? { ...i, quantity: i.quantity + qty } : i);
+        }
+        return [...prev, { name: product.name, quantity: qty }];
+      });
+      if (kitchenNotes.trim()) {
+        setPendingKitchenNotes((prev) => prev ? `${prev}; ${kitchenNotes.trim()}` : kitchenNotes.trim());
+      }
     }
 
     setSelectedProductId('');
     setItemQuantity('1');
     setKitchenNotes('');
+    // Keep dialog open for more items
+  };
+
+  const handleSendToKitchen = () => {
+    if (!selectedOrder || pendingKitchenItems.length === 0) return;
+    const currentOrder = openOrders.find((o) => o.id === selectedOrder.id);
+    const ticketData = {
+      orderName: currentOrder?.name || selectedOrder.name,
+      items: pendingKitchenItems,
+      timestamp: new Date().toISOString(),
+      notes: pendingKitchenNotes || undefined,
+    };
+    const encoded = encodeURIComponent(JSON.stringify(ticketData));
+    window.open(`/pedido-cozinha?data=${encoded}`, '_blank');
+    setPendingKitchenItems([]);
+    setPendingKitchenNotes('');
     setIsAddItemOpen(false);
+  };
+
+  const handleCloseAddItem = () => {
+    if (pendingKitchenItems.length > 0) {
+      handleSendToKitchen();
+    } else {
+      setIsAddItemOpen(false);
+    }
+    setPendingKitchenItems([]);
+    setPendingKitchenNotes('');
   };
 
   const handleCancelItemClick = (orderId: string, itemId: string, quantity: number) => {
@@ -390,8 +419,24 @@ export function OrdersSection() {
                           </div>
                         ) : null;
                       })()}
+
+                      {/* Pending kitchen items preview */}
+                      {pendingKitchenItems.length > 0 && (
+                        <div className="rounded-lg border border-dashed p-3 space-y-1">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Itens para cozinha</p>
+                          {pendingKitchenItems.map((item, idx) => (
+                            <p key={idx} className="text-sm font-medium">{item.quantity}x {item.name}</p>
+                          ))}
+                          {pendingKitchenNotes && (
+                            <p className="text-xs text-muted-foreground">Obs: {pendingKitchenNotes}</p>
+                          )}
+                        </div>
+                      )}
+
                       <div className="flex gap-3 pt-2">
-                        <Button type="button" variant="outline" className="flex-1" onClick={() => setIsAddItemOpen(false)}>Cancelar</Button>
+                        <Button type="button" variant="outline" className="flex-1" onClick={handleCloseAddItem}>
+                          {pendingKitchenItems.length > 0 ? 'Enviar e Fechar' : 'Fechar'}
+                        </Button>
                         <Button type="submit" className="flex-1">Adicionar</Button>
                       </div>
                     </form>
