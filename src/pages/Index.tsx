@@ -78,7 +78,20 @@ const Index = () => {
           alert('Arquivo inválido ou incompatível ❌');
           return;
         }
+  const { settings } = useSettings();
 
+  // Apply dynamic colors
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--primary', settings.primaryColor);
+    root.style.setProperty('--accent', settings.accentColor);
+    root.style.setProperty('--ring', settings.primaryColor);
+    return () => {
+      root.style.removeProperty('--primary');
+      root.style.removeProperty('--accent');
+      root.style.removeProperty('--ring');
+    };
+  }, [settings.primaryColor, settings.accentColor]);
 
         // ⚠️ confirmação
         const ok = confirm(
