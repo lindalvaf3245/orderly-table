@@ -153,6 +153,7 @@ const Index = () => {
         {currentSection === 'products' && <ProductsSection />}
         {currentSection === 'history' && <HistorySection />}
         {currentSection === 'analytics' && <AnalyticsSection />}
+        {currentSection === 'settings' && <SettingsSection />}
       </main>
 
       {/* Mobile Navigation */}
