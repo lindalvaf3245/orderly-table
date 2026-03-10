@@ -124,10 +124,10 @@ const Index = () => {
       <header className="sticky top-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border z-40">
         <div className="container max-w-screen-xl flex justify-between items-center mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-              <img src={Logo} alt="Logo" className="h-24 " />
+              <img src={settings.logoUrl || DefaultLogo} alt="Logo" className="h-24" />
             <div>
-              <h1 className="text-lg font-bold text-foreground">Jailma Mesas e Comandas</h1>
-              <p className="text-xs text-muted-foreground">Sistema de Gestão</p>
+              <h1 className="text-lg font-bold text-foreground">{settings.title}</h1>
+              <p className="text-xs text-muted-foreground">{settings.subtitle}</p>
             </div>
           </div>
             <div className='gap-4 flex'>
