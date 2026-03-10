@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigation } from '@/components/Navigation';
 import { OrdersSection } from '@/components/OrdersSection';
 import { ProductsSection } from '@/components/ProductsSection';
 import { HistorySection } from '@/components/HistorySection';
 import { AnalyticsSection } from '@/components/AnalyticsSection';
-import Logo from '@/assets/jailma-logo.png';
-import { set } from 'date-fns';
+import { SettingsSection } from '@/components/SettingsSection';
+import DefaultLogo from '@/assets/jailma-logo.png';
+import { useSettings } from '@/hooks/useSettings';
 
-type Section = 'orders' | 'products' | 'history' | 'analytics';
+type Section = 'orders' | 'products' | 'history' | 'analytics' | 'settings';
 
 const Index = () => {
   const [currentSection, setCurrentSection] = useState<Section>('orders');

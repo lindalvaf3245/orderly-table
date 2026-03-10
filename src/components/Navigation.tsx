@@ -1,8 +1,8 @@
-import { ShoppingBag, Package, History, BarChart3 } from 'lucide-react';
+import { ShoppingBag, Package, History, BarChart3, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
 
-type Section = 'orders' | 'products' | 'history' | 'analytics';
+type Section = 'orders' | 'products' | 'history' | 'analytics' | 'settings';
 
 interface NavigationProps {
   currentSection: Section;
@@ -14,6 +14,7 @@ const navItems = [
   { id: 'products' as Section, label: 'Produtos', icon: Package },
   { id: 'history' as Section, label: 'Histórico', icon: History },
   { id: 'analytics' as Section, label: 'Analytics', icon: BarChart3 },
+  { id: 'settings' as Section, label: 'Config', icon: Settings },
 ];
 
 export function Navigation({ currentSection, onSectionChange }: NavigationProps) {
