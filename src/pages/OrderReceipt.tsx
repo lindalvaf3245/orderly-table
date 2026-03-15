@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Order } from '@/types/restaurant';
+import { supabase } from '@/integrations/supabase/client';
+import { Order, PaymentMethod } from '@/types/restaurant';
 import Logo from '@/assets/jailma-logo-bw.png';
-
-const OPEN_ORDERS_KEY = 'restaurant_open_orders';
-const ORDER_HISTORY_KEY = 'restaurant_order_history';
 
 const SEPARATOR = '--------------------------';
 const SEPARATOR_DOUBLE = '============================';
@@ -21,28 +19,64 @@ const getPaymentMethodLabel = (method: string) => {
 export default function OrderReceipt() {
   const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const openOrders: Order[] = JSON.parse(localStorage.getItem(OPEN_ORDERS_KEY) || '[]');
-    const orderHistory: Order[] = JSON.parse(localStorage.getItem(ORDER_HISTORY_KEY) || '[]');
-    const foundOrder = openOrders.find((o) => o.id === orderId) || 
-                       orderHistory.find((o) => o.id === orderId);
-    setOrder(foundOrder || null);
+    async function fetchOrder() {
+      if (!orderId) return;
+      const { data } = await supabase
+        .from('orders')
+        .select('*, order_items(*), partial_payments(*)')
+        .eq('id', orderId)
+        .maybeSingle();
+
+      if (data) {
+        setOrder({
+          id: data.id,
+          name: data.name,
+          openedAt: data.opened_at,
+          closedAt: data.closed_at || undefined,
+          status: data.status as Order['status'],
+          total: Number(data.total),
+          discount: Number(data.discount) || undefined,
+          paymentMethod: (data.payment_method as PaymentMethod) || undefined,
+          items: (data.order_items || []).map((i: any) => ({
+            id: i.id,
+            productId: i.product_id || '',
+            productName: i.product_name,
+            quantity: i.quantity,
+            unitPrice: Number(i.unit_price),
+            total: Number(i.total),
+            cancelled: i.cancelled,
+          })),
+          partialPayments: (data.partial_payments || []).map((p: any) => ({
+            id: p.id,
+            amount: Number(p.amount),
+            method: p.method as PaymentMethod,
+            paidAt: p.paid_at,
+          })),
+        });
+      }
+      setLoading(false);
+    }
+    fetchOrder();
   }, [orderId]);
 
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  };
+  const formatCurrency = (value: number) =>
+    value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+  const formatDateTime = (dateString: string) =>
+    new Date(dateString).toLocaleString('pt-BR', {
+      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
     });
-  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <p className="text-gray-600">Carregando...</p>
+      </div>
+    );
+  }
 
   if (!order) {
     return (
@@ -65,44 +99,31 @@ export default function OrderReceipt() {
       acc.push({ productName: item.productName, quantity: item.quantity, unitPrice: item.unitPrice, total: item.total });
     }
     return acc;
-
-
-
   }, []);
 
   const partialPayments = order.partialPayments || [];
   const totalPaid = partialPayments.reduce((s, p) => s + p.amount, 0);
   const remaining = Math.max(0, order.total - totalPaid);
 
-  setTimeout(() => {
-    window.print();
-  }, 500);
+  setTimeout(() => { window.print(); }, 500);
 
   return (
     <div className="min-h-screen bg-white text-black p-2 font-mono text-sm" style={{ maxWidth: '58mm', margin: '0 auto' }}>
-      {/* Header */}
       <div className="text-center">
         <p className="font-bold text-sm">Jailma Lanches e Petiscos</p>
         <div className='flex justify-center items-center'>
-        <img src={Logo} alt="Logo" className='grayscale h-40' />
-
+          <img src={Logo} alt="Logo" className='grayscale h-40' />
         </div>
-        <p className="text-[10px]">
-          Rua Sertãozinho, 105 - Diogo Lopes
-        </p>
-        <p className="text-[10px]">
-          Tel: (84) 9 8604-0039
-        </p>
+        <p className="text-[10px]">Rua Sertãozinho, 105 - Diogo Lopes</p>
+        <p className="text-[10px]">Tel: (84) 9 8604-0039</p>
       </div>
       <p className="text-center">{SEPARATOR}</p>
 
-      {/* Order Info */}
       <p className="font-bold">{order.name}</p>
       <p>Abertura: {formatDateTime(order.openedAt)}</p>
       {order.closedAt && <p>Fechamento: {formatDateTime(order.closedAt)}</p>}
       <p>{SEPARATOR}</p>
 
-      {/* Items */}
       <div className="flex justify-between font-bold">
         <span>Qtd Produto</span>
         <span>Total</span>
@@ -120,7 +141,6 @@ export default function OrderReceipt() {
       )}
       <p>{SEPARATOR_DOUBLE}</p>
 
-      {/* Discount */}
       {(order.discount ?? 0) > 0 && (
         <>
           <div className="flex justify-between">
@@ -135,13 +155,11 @@ export default function OrderReceipt() {
         </>
       )}
 
-      {/* Total */}
       <div className="flex justify-between font-bold text-sm">
         <span>TOTAL</span>
         <span>{formatCurrency(order.total)}</span>
       </div>
 
-      {/* Partial Payments */}
       {partialPayments.length > 0 && (
         <>
           <p>{SEPARATOR}</p>
@@ -166,7 +184,6 @@ export default function OrderReceipt() {
         </>
       )}
 
-      {/* Single payment */}
       {partialPayments.length === 0 && order.paymentMethod && (
         <>
           <p>{SEPARATOR}</p>
@@ -178,8 +195,6 @@ export default function OrderReceipt() {
       )}
 
       <p>{SEPARATOR}</p>
-
-      {/* Footer */}
       <div className="text-center pt-1">
         <p>Obrigado pela preferência!</p>
         <p>Volte sempre!</p>
