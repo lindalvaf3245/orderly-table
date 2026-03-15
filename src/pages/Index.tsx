@@ -40,13 +40,6 @@ const Index = () => {
             </div>
           </div>
           <div className="gap-4 flex">
-            <button onClick={onImportClick} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-4 py-2 rounded-md text-sm font-medium">
-              Importar
-            </button>
-            <input type="file" accept="application/json" id="import-json" className="hidden" />
-            <button onClick={onExportClick} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-4 py-2 rounded-md text-sm font-medium">
-              Exportar
-            </button>
           </div>
         </div>
       </header>
