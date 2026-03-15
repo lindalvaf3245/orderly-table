@@ -14,7 +14,149 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      order_items: {
+        Row: {
+          cancelled: boolean
+          created_at: string
+          id: string
+          order_id: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          cancelled?: boolean
+          created_at?: string
+          id?: string
+          order_id: string
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          total: number
+          unit_price: number
+        }
+        Update: {
+          cancelled?: boolean
+          created_at?: string
+          id?: string
+          order_id?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          discount: number
+          id: string
+          name: string
+          opened_at: string
+          payment_method: string | null
+          status: string
+          total: number
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          discount?: number
+          id?: string
+          name: string
+          opened_at?: string
+          payment_method?: string | null
+          status?: string
+          total?: number
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          discount?: number
+          id?: string
+          name?: string
+          opened_at?: string
+          payment_method?: string | null
+          status?: string
+          total?: number
+        }
+        Relationships: []
+      }
+      partial_payments: {
+        Row: {
+          amount: number
+          id: string
+          method: string
+          order_id: string
+          paid_at: string
+        }
+        Insert: {
+          amount: number
+          id?: string
+          method: string
+          order_id: string
+          paid_at?: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          method?: string
+          order_id?: string
+          paid_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partial_payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          created_at: string
+          for_kitchen: boolean
+          id: string
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          for_kitchen?: boolean
+          id?: string
+          name: string
+          price: number
+        }
+        Update: {
+          created_at?: string
+          for_kitchen?: boolean
+          id?: string
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

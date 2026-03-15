@@ -27,68 +27,6 @@ const Index = () => {
     };
   }, [settings.primaryColor, settings.accentColor]);
 
-  async function onExportClick() {
-    const openOrders = JSON.parse(localStorage.getItem('restaurant_open_orders') || '[]');
-    const orderHistory = JSON.parse(localStorage.getItem('restaurant_order_history') || '[]');
-    const products = JSON.parse(localStorage.getItem('restaurant_products') || '[]');
-
-    const data = { openOrders, orderHistory, products };
-    const jsonString = JSON.stringify(data, null, 2);
-
-    try {
-      const handle = await (window as any).showSaveFilePicker({
-        suggestedName: `jailma_data_${new Date().toISOString()}.json`,
-        types: [{ description: 'JSON file', accept: { 'application/json': ['.json'] } }],
-      });
-      const writable = await handle.createWritable();
-      await writable.write(jsonString);
-      await writable.close();
-      alert('Arquivo salvo com sucesso! ✅');
-    } catch (err) {
-      console.log('Usuário cancelou o salvamento');
-    }
-  }
-
-  function onImportClick() {
-    document.getElementById('import-json')?.click();
-  }
-
-  setTimeout(() => {
-    document.getElementById('import-json')?.addEventListener('change', function (event) {
-      const file = (event.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        try {
-          const data = JSON.parse(e.target?.result as string);
-          if (
-            !Array.isArray(data.openOrders) ||
-            !Array.isArray(data.orderHistory) ||
-            !Array.isArray(data.products)
-          ) {
-            alert('Arquivo inválido ou incompatível ❌');
-            return;
-          }
-
-          const ok = confirm('Isso irá substituir todos os dados atuais.\nDeseja continuar?');
-          if (!ok) return;
-
-          localStorage.setItem('restaurant_open_orders', JSON.stringify(data.openOrders));
-          localStorage.setItem('restaurant_order_history', JSON.stringify(data.orderHistory));
-          localStorage.setItem('restaurant_products', JSON.stringify(data.products));
-
-          alert('Dados importados com sucesso! ✅');
-          location.reload();
-        } catch (err) {
-          alert('Erro ao ler o arquivo JSON ❌');
-          console.error(err);
-        }
-      };
-      reader.readAsText(file);
-      (event.target as HTMLInputElement).value = '';
-    });
-  }, 1000);
 
   return (
     <div className="min-h-screen bg-background pb-20 sm:pb-0">
@@ -102,13 +40,6 @@ const Index = () => {
             </div>
           </div>
           <div className="gap-4 flex">
-            <button onClick={onImportClick} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-4 py-2 rounded-md text-sm font-medium">
-              Importar
-            </button>
-            <input type="file" accept="application/json" id="import-json" className="hidden" />
-            <button onClick={onExportClick} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-4 py-2 rounded-md text-sm font-medium">
-              Exportar
-            </button>
           </div>
         </div>
       </header>
