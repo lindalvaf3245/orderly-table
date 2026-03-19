@@ -386,8 +386,31 @@ export function OrdersSection() {
             <>
               <DialogHeader>
                 <div className="flex items-center justify-between pr-6">
-                  <DialogTitle className="text-xl">{currentSelectedOrder.name}</DialogTitle>
-                  <Badge variant="outline" className="gap-1">
+                  {isRenaming ? (
+                    <div className="flex items-center gap-2 flex-1 mr-2">
+                      <Input
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleConfirmRename()}
+                        className="h-8 text-lg font-semibold"
+                        autoFocus
+                      />
+                      <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={handleConfirmRename}>
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" onClick={() => setIsRenaming(false)}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <DialogTitle className="text-xl">{currentSelectedOrder.name}</DialogTitle>
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleStartRename} title="Editar nome">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  )}
+                  <Badge variant="outline" className="gap-1 shrink-0">
                     <Clock className="h-3 w-3" />
                     {formatTime(currentSelectedOrder.openedAt)}
                   </Badge>

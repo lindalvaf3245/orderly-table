@@ -243,6 +243,13 @@ export function useOrders() {
     await fetchOrders();
   }, [fetchOrders]);
 
+  const renameOrder = useCallback(async (orderId: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    await supabase.from('orders').update({ name: trimmed }).eq('id', orderId);
+    await fetchOrders();
+  }, [fetchOrders]);
+
   return {
     openOrders,
     orderHistory,
@@ -260,5 +267,6 @@ export function useOrders() {
     removePartialPayment,
     getOrderRemainingBalance,
     setOrderDiscount,
+    renameOrder,
   };
 }
