@@ -57,7 +57,7 @@ export function OrdersSection() {
   const {
     openOrders, createOrder, addItemToOrder, cancelItem, removeItem,
     cancelOrder, payOrder, addPartialPayment, removePartialPayment, getOrderRemainingBalance,
-    setOrderDiscount,
+    setOrderDiscount, renameOrder,
   } = useOrders();
   const { products } = useProducts();
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
