@@ -85,6 +85,23 @@ export function OrdersSection() {
   const [isDiscountOpen, setIsDiscountOpen] = useState(false);
   const [discountValue, setDiscountValue] = useState('');
 
+  // Rename state
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
+
+  const handleStartRename = () => {
+    if (!currentSelectedOrder) return;
+    setRenameValue(currentSelectedOrder.name);
+    setIsRenaming(true);
+  };
+
+  const handleConfirmRename = async () => {
+    if (!currentSelectedOrder || !renameValue.trim()) return;
+    await renameOrder(currentSelectedOrder.id, renameValue);
+    toast.success('Nome da comanda atualizado!');
+    setIsRenaming(false);
+  };
+
   const handleCreateOrder = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newOrderName.trim()) {
