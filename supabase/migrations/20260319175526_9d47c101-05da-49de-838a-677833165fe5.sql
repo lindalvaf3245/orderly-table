@@ -1,0 +1,1 @@
+ALTER PUBLICATION supabase_realtime ADD TABLE public.orders, public.order_items, public.partial_payments, public.products;
