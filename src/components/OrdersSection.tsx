@@ -39,6 +39,8 @@ import {
   Copy,
   SplitSquareHorizontal,
   Percent,
+  Pencil,
+  Check,
 } from 'lucide-react';
 import { PixIcon } from '@/components/icons/PixIcon';
 import { Combobox } from '@/components/ui/combobox';
