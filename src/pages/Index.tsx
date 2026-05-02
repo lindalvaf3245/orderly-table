@@ -4,11 +4,12 @@ import { OrdersSection } from '@/components/OrdersSection';
 import { ProductsSection } from '@/components/ProductsSection';
 import { HistorySection } from '@/components/HistorySection';
 import { AnalyticsSection } from '@/components/AnalyticsSection';
+import { ExpensesSection } from '@/components/ExpensesSection';
 import { SettingsSection } from '@/components/SettingsSection';
 import DefaultLogo from '@/assets/jailma-logo.png';
 import { useSettings } from '@/hooks/useSettings';
 
-type Section = 'orders' | 'products' | 'history' | 'analytics' | 'settings';
+type Section = 'orders' | 'products' | 'history' | 'analytics' | 'expenses' | 'settings';
 
 const Index = () => {
   const [currentSection, setCurrentSection] = useState<Section>('orders');
@@ -52,6 +53,7 @@ const Index = () => {
         {currentSection === 'orders' && <OrdersSection />}
         {currentSection === 'products' && <ProductsSection />}
         {currentSection === 'history' && <HistorySection />}
+        {currentSection === 'expenses' && <ExpensesSection />}
         {currentSection === 'analytics' && <AnalyticsSection />}
         {currentSection === 'settings' && <SettingsSection />}
       </main>
