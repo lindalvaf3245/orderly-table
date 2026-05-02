@@ -400,7 +400,42 @@ export function AnalyticsSection() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Expenses by Category */}
+          {expensesByCategory.length > 0 && (
+            <Card className="col-span-1 lg:col-span-2">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Saídas por Categoria</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1">
+                  {expensesByCategory.map((cat, idx) => {
+                    const pct = totalExpenses > 0 ? (cat.value / totalExpenses) * 100 : 0;
+                    return (
+                      <div key={cat.name} className="flex items-center text-sm px-2 py-2 rounded-md hover:bg-muted/50 transition-colors">
+                        <span className="w-8 font-bold text-muted-foreground">{idx + 1}</span>
+                        <span className="flex-1 font-medium truncate">{cat.name}</span>
+                        <span className="w-16 text-right text-muted-foreground">{pct.toFixed(0)}%</span>
+                        <span className="w-28 text-right font-medium text-destructive">- {formatCurrency(cat.value)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
+      )}
+      {/* Show expenses summary even when no orders in period */}
+      {filteredOrders.length === 0 && filteredExpenses.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Saídas do período</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-destructive">- {formatCurrency(totalExpenses)}</p>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
