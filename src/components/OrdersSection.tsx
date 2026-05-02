@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useOrders } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
@@ -88,6 +88,15 @@ export function OrdersSection() {
   // Rename state
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+
+  // Reset pending kitchen items whenever the selected order changes or dialog closes,
+  // to avoid carrying items from a previous unfinished order into another one.
+  useEffect(() => {
+    setPendingKitchenItems([]);
+    setPendingKitchenNotes('');
+    setKitchenNotes('');
+    setIsAddItemOpen(false);
+  }, [selectedOrder?.id]);
 
   const handleStartRename = () => {
     if (!currentSelectedOrder) return;
