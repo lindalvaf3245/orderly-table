@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useOrders } from '@/hooks/useOrders';
+import { useExpenses } from '@/hooks/useExpenses';
+import { Expense } from '@/types/expense';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +23,7 @@ import {
   LineChart,
   Line,
 } from 'recharts';
-import { BarChart3, TrendingUp, DollarSign, Package, CreditCard, Banknote } from 'lucide-react';
+import { BarChart3, TrendingUp, DollarSign, Package, CreditCard, Banknote, TrendingDown, Percent } from 'lucide-react';
 import { PixIcon } from '@/components/icons/PixIcon';
 import { Order, PaymentMethod } from '@/types/restaurant';
 
@@ -130,18 +132,43 @@ const productChartConfig: ChartConfig = {
   quantity: { label: 'Quantidade', color: 'hsl(25, 95%, 50%)' },
 };
 
+function getFilteredExpenses(expenses: Expense[], period: Period): Expense[] {
+  if (period === 'all') return expenses;
+  const cutoff = new Date();
+  if (period === 'week') cutoff.setDate(cutoff.getDate() - 7);
+  else if (period === 'month') cutoff.setDate(cutoff.getDate() - 30);
+  // expenseDate is YYYY-MM-DD; compare as date
+  cutoff.setHours(0, 0, 0, 0);
+  return expenses.filter(e => new Date(e.expenseDate + 'T00:00:00') >= cutoff);
+}
+
 export function AnalyticsSection() {
   const { orderHistory } = useOrders();
+  const { expenses } = useExpenses();
   const [period, setPeriod] = useState<Period>('week');
 
   const filteredOrders = useMemo(() => getFilteredOrders(orderHistory, period), [orderHistory, period]);
+  const filteredExpenses = useMemo(() => getFilteredExpenses(expenses, period), [expenses, period]);
   const dailySales = useMemo(() => getDailySalesData(filteredOrders), [filteredOrders]);
   const paymentData = useMemo(() => getPaymentMethodData(filteredOrders), [filteredOrders]);
   const productData = useMemo(() => getProductData(filteredOrders), [filteredOrders]);
 
   const totalRevenue = filteredOrders.reduce((s, o) => s + o.total, 0);
+  const totalExpenses = filteredExpenses.reduce((s, e) => s + e.amount, 0);
+  const profit = totalRevenue - totalExpenses;
+  const margin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0;
   const totalOrders = filteredOrders.length;
   const avgTicket = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+  const expensesByCategory = useMemo(() => {
+    const map: Record<string, number> = {};
+    filteredExpenses.forEach(e => {
+      map[e.category] = (map[e.category] || 0) + e.amount;
+    });
+    return Object.entries(map)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [filteredExpenses]);
 
   const periodLabels: Record<Period, string> = {
     week: 'Últimos 7 dias',
@@ -170,7 +197,7 @@ export function AnalyticsSection() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards - revenue */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
@@ -202,6 +229,43 @@ export function AnalyticsSection() {
             <div>
               <p className="text-xs text-muted-foreground">Ticket Médio</p>
               <p className="text-xl font-bold text-foreground">{formatCurrency(avgTicket)}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* KPI Cards - profit */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-destructive/15 flex items-center justify-center">
+              <TrendingDown className="h-5 w-5 text-destructive" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Saídas</p>
+              <p className="text-xl font-bold text-foreground">{formatCurrency(totalExpenses)}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className={`h-10 w-10 rounded-full flex items-center justify-center ${profit >= 0 ? 'bg-accent/15' : 'bg-destructive/15'}`}>
+              <DollarSign className={`h-5 w-5 ${profit >= 0 ? 'text-accent' : 'text-destructive'}`} />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Lucro</p>
+              <p className={`text-xl font-bold ${profit >= 0 ? 'text-foreground' : 'text-destructive'}`}>{formatCurrency(profit)}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
+              <Percent className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Margem de Lucro</p>
+              <p className={`text-xl font-bold ${profit >= 0 ? 'text-foreground' : 'text-destructive'}`}>{margin.toFixed(1)}%</p>
             </div>
           </CardContent>
         </Card>
